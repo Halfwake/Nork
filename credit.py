@@ -1,2 +1,2 @@
-class CreditScreen():
+class CreditScreen(object):
     pass

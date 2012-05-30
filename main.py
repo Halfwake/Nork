@@ -12,9 +12,13 @@ class Game(pyglet.window.Window):
         self.game_screen = game.GameScreen()
         self.menu_screen = menu.MenuScreen()
         self.credit_screen = credit.CreditScreen()
+        self.mode = self.game_screen #for testing
     def on_draw(self):
         self.clear()
+        self.mode.on_draw()
         self.fps_display.draw()
+    def on_key_press(self, symbol, modifiers):
+        self.mode.on_key_press(symbol, modifiers)
 if __name__ == "__main__":
     SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
     root = Game(SCREEN_WIDTH, SCREEN_HEIGHT)
