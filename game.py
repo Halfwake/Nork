@@ -39,8 +39,6 @@ class GameScreen(object):
     def load_save(self, save_file):
         pass
 
-class Camera():
-    pass
 class Interpolation(object):
     "Returns a list of changes in movement."
     def interpolate(self, distance, increments, movement = "linear"):
@@ -82,16 +80,16 @@ class Player(pyglet.sprite.Sprite, Collide, Interpolation):
         increments = 5 #amount of frames for movement
         if pyglet.window.key.UP in keys:
             for movement in self.interpolate(self.speed + self.speed * dt, increments):
-                pyglet.clock.schedule_once(lambda : change_place(movement, "y"), 1 / increments)
+                pyglet.clock.schedule_once(lambda dt : change_place(movement, "y"), 1 / increments)
         elif pyglet.window.key.DOWN in keys:
             for movement in self.interpolate(-1 * (self.speed + self.speed * dt), increments):
-                pyglet.clock.schedule_once(lambda : change_place(movement, "y"), 1 / increments)
+                pyglet.clock.schedule_once(lambda dt : change_place(movement, "y"), 1 / increments)
         elif pyglet.window.key.RIGHT in keys:
             for movement in self.interpolate(self.speed + self.speed * dt, increments):
-                pyglet.clock.schedule_once(lambda : change_place(movement, "x"), 1 / increments)
+                pyglet.clock.schedule_once(lambda dt : change_place(movement, "x"), 1 / increments)
         elif pyglet.window.key.UP in keys:
             for movement in self.interpolate(-1 * (self.speed + self.speed * dt), increments):
-                pyglet.clock.schedule_once(lambda : change_place(movement, "x"), 1 / increments)
+                pyglet.clock.schedule_once(lambda dt : change_place(movement, "x"), 1 / increments)
                 
     
 
