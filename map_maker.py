@@ -1,6 +1,7 @@
 import pyglet
 import tile
 import menu
+import serial
 
 IMAGES = {"save" : pyglet.image.load("resources/art/menu_save.png"),
           "load" : pyglet.image.load("resources/art/menu_load.png"),
@@ -12,7 +13,7 @@ while True:
         reply = raw_input("What is the file name?")
         try:
             f_working = reply
-            obj_working = tile.load_file(f_working)
+            obj_working = serial.load_file(f_working)
             break
         except IOError:
             print "File not found."
@@ -42,11 +43,11 @@ class Interface(pyglet.window.Window):
         self.load_button = menu.Button(self.save_button.x + self.save_button.width, 0, IMAGES["load"], self.load_file)
         self.new_button = menu.Button(self.load_button.x + self.load_button.width, 0, IMAGES["new"], self.new_file)
     def save_file(self):
-        tile.save_file(f_working, obj_working)
+        serial.save_file(f_working, obj_working)
     def load_file(self):
         try:
             reply = raw_input("What file would you like to load? ")
-            obj_working = tile.load_file(reply)
+            obj_working = serial.load_file(reply)
         except IOError:
             print "File not found."
     def new_file(self):

@@ -11,8 +11,8 @@ TILES = {}
 class GrassTile(Tile):
     def __init__(self):
         super(GrassTile, self).__init__(IMAGES["grass1"], False)
-        self.hash_name = "grass"
-TILES["grass"] = GrassTile
+        self.hash_name = "GrassTile"
+TILES["GrassTile"] = GrassTile
 
 
 class Map(object):
@@ -20,7 +20,8 @@ class Map(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.content = [[TILES["grass"]() for x in range(self.width)] for y in range(self.height)]
+        self.content = [[TILES["GrassTile"]() for x in range(self.width)] for y in range(self.height)]
+        self.objects = None
 class Camera(object):
     "Camera isntances contain a visible area and can be drawn."
     def __init__(self, a_map, width, height):
@@ -45,37 +46,7 @@ class Camera(object):
                 item.batch = self.batch
     def draw(self):
         self.batch.draw()
-def load_file(file_name):
-    "Loads map files"
-    f_map = open(file_name, "rb")
-    try:
-        width = int(f_map.readline())
-        height = int(f_map.readline())
-        new_map = Map(width, height)
-        x, y = 0, 0
-        for line in f_map.readlines():
-            if line == "\n":
-                y += 1
-                x = 0
-            else:
-                new_map.content[x][y] = TILES[line[:-1]]()
-                x += 1
-        return new_map
-            
-    finally:
-        f_map.close()
-def save_file(file_name, a_map):
-    "Saves map files to 'file_name'"
-    f_map = open(file_name, "wb")
-    try:
-        f_map.write(str(a_map.width) + "\n")
-        f_map.write(str(a_map.height) + "\n")
-        for row in a_map.content:
-            for element in row:
-                f_map.write(element.hash_name + "\n")
-            f_map.write("\n")
-    finally:
-        f_map.close()
+
         
 if __name__ == "__main__":
     a_map = Map(10,10)

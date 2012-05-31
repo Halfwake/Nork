@@ -1,8 +1,10 @@
 import pyglet
 import tile
+import serial
 
 IMAGES = {"npc" : pyglet.image.ImageGrid(pyglet.image.load("resources/art/npc.png"), 8, 8)}
 IMAGES["player"] = IMAGES["npc"][56]
+IMAGES["corinth"] = IMAGES["npc"][59]
 SOUNDS = {}
 CAMERA_WIDTH = 10
 CAMERA_HEIGHT = 10
@@ -13,7 +15,7 @@ class GameScreen(object):
             self.load_save(save_file)
         else:
             self.player = Player()
-            self.map = tile.load_file("resources/map/default_map")
+            self.map = serial.load_file("resources/map/default_map")
             self.camera = tile.Camera(self.map, CAMERA_WIDTH, CAMERA_HEIGHT)
             self.lambdas = []
             self.keys = []
@@ -22,7 +24,6 @@ class GameScreen(object):
         "Starts all clock schedule functions."
         self.lambdas.append((lambda dt : self.player.move(dt, self.keys), 0.05))
         for lamb in self.lambdas:
-            print lamb
             pyglet.clock.schedule_interval(lamb[0], lamb[1])
     def update_end(self):
         "Ends all clock schedule functions. Should be used for end of mode."
@@ -35,7 +36,7 @@ class GameScreen(object):
     def on_key_release(self, symbol, modifiers):
         self.keys.pop(self.keys.index(symbol))
     def on_mouse_press(self, x, y, symbol, modifiers):
-        pass
+        pass #Add tooltip stuff here
     def load_save(self, save_file):
         pass
 
@@ -43,8 +44,7 @@ class Interpolation(object):
     "Returns a list of changes in movement."
     def interpolate(self, distance, increments, movement = "linear"):
         if movement == "linear":
-            final = [distance / increments for i in range(1, increments + 1)]
-            final.reverse()
+            final = [float(distance) / float(increments) for i in range(1, increments + 1)]
             return final
             
             
@@ -68,7 +68,7 @@ class Collide(object):
 class Player(pyglet.sprite.Sprite, Collide, Interpolation):
     def __init__(self):
         super(Player, self).__init__(IMAGES["player"])
-        self.speed = 25 #Pixels moved per second
+        self.speed = 10 #Pixels moved per second
     def change_place(self, amount, axis):
         "Because lambdas are gimped pieces of shit, fuck you guido."
         if axis == "x":
@@ -77,19 +77,19 @@ class Player(pyglet.sprite.Sprite, Collide, Interpolation):
             self.y += amount
     def move(self, dt, keys):
         "Moves the character."
-        increments = 5 #amount of frames for movement
+        increments = 20 #amount of frames for movement
         if pyglet.window.key.UP in keys:
-            for movement in self.interpolate(self.speed + self.speed * dt, increments):
-                pyglet.clock.schedule_once(lambda dt : change_place(movement, "y"), 1 / increments)
-        elif pyglet.window.key.DOWN in keys:
-            for movement in self.interpolate(-1 * (self.speed + self.speed * dt), increments):
-                pyglet.clock.schedule_once(lambda dt : change_place(movement, "y"), 1 / increments)
-        elif pyglet.window.key.RIGHT in keys:
-            for movement in self.interpolate(self.speed + self.speed * dt, increments):
-                pyglet.clock.schedule_once(lambda dt : change_place(movement, "x"), 1 / increments)
-        elif pyglet.window.key.UP in keys:
-            for movement in self.interpolate(-1 * (self.speed + self.speed * dt), increments):
-                pyglet.clock.schedule_once(lambda dt : change_place(movement, "x"), 1 / increments)
+            for movement in self.interpolate(self.speed, increments):
+                pyglet.clock.schedule_once(lambda dt : self.change_place(movement + movement * dt, "y"), 1 / increments)
+        if pyglet.window.key.DOWN in keys:
+            for movement in self.interpolate(-1 * (self.speed), increments):
+                pyglet.clock.schedule_once(lambda dt : self.change_place(movement + movement * dt, "y"), 1 / increments)
+        if pyglet.window.key.RIGHT in keys:
+            for movement in self.interpolate(self.speed, increments):
+                pyglet.clock.schedule_once(lambda dt : self.change_place(movement + movement * dt, "x"), 1 / increments)
+        if pyglet.window.key.LEFT in keys:
+            for movement in self.interpolate(-1 * (self.speed), increments):
+                pyglet.clock.schedule_once(lambda dt : self.change_place(movement + movement * dt, "x"), 1 / increments)
                 
     
 

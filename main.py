@@ -19,6 +19,10 @@ class Game(pyglet.window.Window):
         self.fps_display.draw()
     def on_key_press(self, symbol, modifiers):
         self.mode.on_key_press(symbol, modifiers)
+    def on_mouse_press(self, x, y, symbol, modifiers):
+        self.mode.on_key_press(x, y, symbol, modifiers)
+    def on_key_release(self, symbol, modifiers):
+        self.mode.on_key_release(symbol, modifiers)
 if __name__ == "__main__":
     SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
     root = Game(SCREEN_WIDTH, SCREEN_HEIGHT)
