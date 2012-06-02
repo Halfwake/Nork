@@ -2,41 +2,34 @@ import pyglet
 import tile
 import menu
 import serial
+import sys
 
 IMAGES = {"save" : pyglet.image.load("resources/art/menu_save.png"),
           "load" : pyglet.image.load("resources/art/menu_load.png"),
           "new" : pyglet.image.load("resources/art/menu_new.png")}
 
-while True:
-    reply = raw_input("Load file? y/n")
-    if reply.upper() == "Y":
-        reply = raw_input("What is the file name?")
-        try:
-            f_working = reply
-            obj_working = serial.load_file(f_working)
-            break
-        except IOError:
-            print "File not found."
-        break
-    if reply.upper() == "N":
-        reply = raw_input("What is the new file name?")
-        try:
-            f_working = reply
-            width = int(raw_input("Width?"))
-            height = int(raw_input("Height?"))
-            obj_working = tile.Map(width, height)
-            check = open(f_working)
-            check.close()
-            break
-        except IOError:
-            "Invalid name."
-        break
-    print "Not a proper anwser."
+class Console(object):
+    def __init__(self):
+        self.output = pyglet.text.Label("")
+        self.input = pyglet.text.Label("")
+    def draw(self):
+        self.output.draw()
+        self.input.draw()
+    def readline(self, text = None):
+        if text: return raw_input(text)
+        else: return raw_input()
+        return read_text
+    def write(self, text):
+        self.output.text += "\n" + text
+
+new_io = Console()
+    
 
 class Interface(pyglet.window.Window):
     def __init__(self):
         super(Interface, self).__init__()
-        self.camera = tile.Camera(obj_working, 10, 10)
+        self.new_file()
+        self.camera = tile.Camera(self.obj_working, 10, 10, 0, 0)
         self.fps_display = pyglet.clock.ClockDisplay(color = (200.0, 200.0, 200.5, 128.0))
         pyglet.clock.set_fps_limit(40)
         self.save_button = menu.Button(0, 0, IMAGES["save"], self.save_file)
@@ -47,11 +40,11 @@ class Interface(pyglet.window.Window):
     def load_file(self):
         try:
             reply = raw_input("What file would you like to load? ")
-            obj_working = serial.load_file(reply)
+            self.obj_working = serial.load_file(reply)
         except IOError:
             print "File not found."
     def new_file(self):
-        obj_working = tile.Map(10, 10)
+        self.obj_working = tile.Map(10, 10)
     def on_mouse_press(self, x, y, symbol, modifiers):
         self.save_button.click(x, y)
         self.load_button.click(x, y)
