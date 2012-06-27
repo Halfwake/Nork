@@ -26,6 +26,7 @@ class Map(object):
         self.content = [[TILES["GrassTile"]() for x in range(self.width)] for y in range(self.height)]
         self.objects = {}
         self.objects["player_start"] = player_start
+        self.objects["npcs"] = []
 class Camera(object):
     "Camera instances contain a visible area and can be drawn."
     def __init__(self, a_map, width, height, x_offset, y_offset):
@@ -46,6 +47,10 @@ class Camera(object):
                 if item.x < x < item.x + item.width:
                     if item.y < y < item.y + item.height:
                         return item.tool_tip
+        for npc in self.a_map.objects["npcs"]:
+            if npc.x < x < npc.x + npc.width:
+                if npc.y < y < npc.y + npc.height:
+                    return npc.tool_tip
                 
         for row in self.a_map.content:
             for item in row:

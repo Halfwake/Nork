@@ -12,6 +12,7 @@ class Toolbar(object):
         self.mode.on_draw()
     def on_mouse_press(self, x, y, symbol, modifiers):
         self.mode.on_mouse_press(x, y, symbol, modifiers)
+            
         
 class MenuFrame(object):
     def on_draw(self):
@@ -21,8 +22,4 @@ class MenuFrame(object):
 
 
 
-        
-def ask_user(talk_choice):
-    toolbar_instance.mode = talk_choice
-    return
         

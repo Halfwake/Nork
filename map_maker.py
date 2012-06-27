@@ -3,27 +3,14 @@ import tile
 import menu
 import serial
 import sys
+from Tkinter import *
+from tkFileDialog import askopenfilename, asksaveasfilename
+
+
 
 IMAGES = {"save" : pyglet.image.load("resources/art/menu_save.png"),
           "load" : pyglet.image.load("resources/art/menu_load.png"),
           "new" : pyglet.image.load("resources/art/menu_new.png")}
-
-class Console(object):
-    def __init__(self):
-        self.output = pyglet.text.Label("")
-        self.input = pyglet.text.Label("")
-    def draw(self):
-        self.output.draw()
-        self.input.draw()
-    def readline(self, text = None):
-        if text: return raw_input(text)
-        else: return raw_input()
-        return read_text
-    def write(self, text):
-        self.output.text += "\n" + text
-
-new_io = Console()
-    
 
 class Interface(pyglet.window.Window):
     def __init__(self):
@@ -36,15 +23,16 @@ class Interface(pyglet.window.Window):
         self.load_button = menu.Button(self.save_button.x + self.save_button.width, 0, IMAGES["load"], self.load_file)
         self.new_button = menu.Button(self.load_button.x + self.load_button.width, 0, IMAGES["new"], self.new_file)
     def save_file(self):
-        serial.save_file(f_working, obj_working)
+        self.f_working = asksaveasfilename()
+        serial.save_file(self.f_working, self.obj_working)
     def load_file(self):
         try:
-            reply = raw_input("What file would you like to load? ")
-            self.obj_working = serial.load_file(reply)
+            self.f_working = askopenfilename()
+            self.obj_working = serial.load_file(self.f_working)
         except IOError:
             print "File not found."
     def new_file(self):
-        self.obj_working = tile.Map(10, 10)
+        self.obj_working = tile.Map(100, 100)
     def on_mouse_press(self, x, y, symbol, modifiers):
         self.save_button.click(x, y)
         self.load_button.click(x, y)

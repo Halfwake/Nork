@@ -2,10 +2,12 @@ import pyglet
 import main
 
 class MenuScreen(object):
-    pass
+    def __init__(self, game):
+        self.game = game
 
 class MainMenuScreen(object):
-    pass
+    def __init__(self, game):
+        self.game = game
 
 class Button(pyglet.sprite.Sprite):
     def __init__(self, x, y, image, command):
@@ -30,9 +32,11 @@ class LabelButton(pyglet.text.Label):
                                           y = y)
         self.command =  None
     def pos(self, x, y):
-        if self.x < x < self.x + (font_size * len(self.text)):
-            if self.y < y < self.y + (font_size * len(self.text)):
+        if self.x < x < self.x + (self.font_size * len(self.text)):
+            if self.y < y < self.y + (self.font_size * len(self.text)):
                 return True
         return False
+    def click(self, x, y):
+        if self.pos(x, y): self.command()
     
         

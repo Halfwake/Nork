@@ -1,8 +1,10 @@
 import pyglet
+import thread
 import tile
 import serial
 import toolbar
 import main
+import menu
 
 IMAGES = {"npc" : pyglet.image.ImageGrid(pyglet.image.load("resources/art/npc.png"), 8, 8)}
 IMAGES["player"] = IMAGES["npc"][56]
@@ -15,13 +17,15 @@ SOUNDS = {}
 CAMERA_WIDTH = 25
 CAMERA_HEIGHT = 15
 class GameScreen(object):
-    def __init__(self, save_file = None):
+    def __init__(self, game, save_file = None):
+        self.game = game
         self.save_file = save_file
         self.map = serial.load_file("resources/map/default_map")
         self.map.objects["player"] = Player(self.map.objects["player_start"][0],
                                             self.map.objects["player_start"][1],
                                             self)
         self.toolbar = toolbar.Toolbar()
+        self.map.objects["npcs"].append(Corinth(100,100,self)) #testing NPC
         self.camera = tile.Camera(self.map, CAMERA_WIDTH, CAMERA_HEIGHT, 0, 128)
         self.lambdas = []
         self.keys = []
@@ -38,17 +42,21 @@ class GameScreen(object):
         "Ends all clock schedule functions. Should be used for end of mode."
         for lamb in self.lambdas: pyglet.clock.unschedule(lamb[0])
     def on_draw(self):
+        self.toolbar.on_draw()
         self.camera.draw()
         for key in self.map.objects:
             if hasattr(self.map.objects[key], "draw"):
                 self.map.objects[key].draw()
+        for npc in self.map.objects["npcs"]:
+            npc.draw()
         self.toolbar.on_draw()
     def on_key_press(self, symbol, modifiers):
         self.keys.append(symbol)
     def on_key_release(self, symbol, modifiers):
         self.keys.pop(self.keys.index(symbol))
     def on_mouse_press(self, x, y, symbol, modifiers):
-        print self.camera.touch_screen(x, y)
+        print self.camera.touch_screen(x, y)#needs work here
+        self.toolbar.on_mouse_press(x, y, symbol, modifiers)
     def load_save(self, save_file):
         pass
 
@@ -93,11 +101,12 @@ class Player(pyglet.sprite.Sprite, Collide, Interpolation):
             self.y += amount
     def interact(self, dt, keys):
         if pyglet.window.key.SPACE in keys:
-            for key in self.game.a_map.objects:
-                obj = self.game.a_map.objects["key"]
-                if obj.__class__ == Npc:
-                    if obj.proxim(self.game.a_map.objects["player"]):
-                        obj.talk()
+            for key in self.game.map.objects:
+                obj = self.game.map.objects[key]
+                if key == "npcs":
+                    for npc in obj:
+                        if npc.proxim(self.game.map.objects["player"],15):
+                            npc.talk(self.game.toolbar)
     def move(self, dt, keys):
         "Moves the character."
         increments = 20 #amount of frames for movement
@@ -114,22 +123,8 @@ class Player(pyglet.sprite.Sprite, Collide, Interpolation):
             for movement in self.interpolate(-1 * (self.speed), increments):
                 pyglet.clock.schedule_once(lambda dt : self.change_place(movement + movement * dt, "x"), 1 / increments)
 
-class Npc(pyglet.sprite.Sprite, Collide, Interpolation):
-    def __init__(self, image, game):
-        super(Npc, self).__init__(image)
-        self.game = game
-        self.talk_obj = [(None, "")]
-    def proxim(self, other, distance):
-        if abs(self.x - other.x) <= distance and abs(self.y - other.y) <= distance:
-            return True
-        return False
-    def talk(self):
-        for prompt in self.talk_obj:
-            if prompt.__class__ == TalkBack:
-                self.talk_obj = toolbar.ask_user(prompt)
-                break
-            elif prompt.__class__ == tuple:
-                toolbar.display_text(prompt[0], prompt[1])
+        
+    
 
 class TalkBack(object):
     def __init__(self, response_dict):
@@ -137,24 +132,58 @@ class TalkBack(object):
         self.background = IMAGES["toolbar"]
         self.options = []
         self.create_options()
+        self.reply = None
+        self.npc = None
     def create_options(self):
         interval = len(self.response_dict)
-        for cntr, key in enumerate(self.response_dict):
-            new_label = (menu.LabelButton,
-                         128 / interval,
-                         64,
-                         128 / interval * cntr)
-            new_label.command = lambda : self.response_dict(new_label.text)
+        for cntr, key in enumerate(self.response_dict): #key is text
+            response = self.response_dict[key]
+            new_label = menu.LabelButton(key,
+                                         128 / interval,
+                                         64,
+                                         128 / interval * cntr)
+            new_label.command = lambda : self.change_reply(response)
             self.options.append(new_label)
+    def change_reply(self, change):
+        if change == {}:
+            self.game.toolbar.mode = self.game.toolbar.last_mode
+        else:
+            self.npc.talk_obj = change 
+            self.npc.talk(self.game.toolbar, self.talk_obj)
     def on_mouse_press(self, x, y, symbol, modifiers):
         for option in self.options:
-            if option.pos: option.command()                          
-    def draw(self):
-        self.background.draw()
+            option.click(x, y) 
+    def on_draw(self):
+        self.background.blit(0,0)
         for option in self.options: option.draw()
             
-            
+class Npc(pyglet.sprite.Sprite, Collide, Interpolation):
+    def __init__(self, x, y, image, game, talk_obj = None, tool_tip = None):
+        super(Npc, self).__init__(image)
+        self.x = x
+        self.y = y
+        self.game = game
+        self.talk_obj = talk_obj    
+        self.talk_obj.npc = self
+        self.tool_tip = tool_tip
+    def proxim(self, other, distance):
+        if abs(self.x - other.x) <= distance and abs(self.y - other.y) <= distance:
+            return True
+        return False
+    def talk(self, toolbar, prompt = TalkBack({"Hello!" : TalkBack({"World" : {}})})):
+            prompt = prompt or self.talk_obj #can't put a self.field in default arguments
+            self.talk_obj.npc = self
+            self.game.toolbar.mode = self.talk_obj
+          
         
                 
     
+class Corinth(Npc):
+    def __init__(self, x, y, game, talk = None):
+        super(Corinth, self).__init__(image = IMAGES["corinth"],
+                                      talk_obj = TalkBack({"Hello!" : TalkBack({"World" : {}})}),
+                                      tool_tip = "Pretty, but dim. Pretty dim.",
+                                      x = x,
+                                      y = y,
+                      game = game)
 
