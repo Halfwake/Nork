@@ -3,8 +3,8 @@ import thread
 import tile
 import serial
 import toolbar
-import main
 import menu
+import messenger
 
 IMAGES = {"npc" : pyglet.image.ImageGrid(pyglet.image.load("resources/art/npc.png"), 8, 8)}
 IMAGES["player"] = IMAGES["npc"][56]
@@ -18,6 +18,7 @@ CAMERA_WIDTH = 25
 CAMERA_HEIGHT = 15
 class GameScreen(object):
     def __init__(self, game, save_file = None):
+        messenger.Messenger.gamescreens.append(self)
         self.game = game
         self.save_file = save_file
         self.map = serial.load_file("resources/map/default_map")

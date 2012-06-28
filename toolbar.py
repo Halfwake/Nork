@@ -1,11 +1,13 @@
 import pyglet
 import menu
+import messenger
 
 IMAGES = {}
 IMAGES["toolbar"] = pyglet.image.load("resources/art/toolbar.png")
 
 class Toolbar(object):
     def __init__(self):
+        messenger.Messenger.toolbars.append(self)
         self.menu_frame = MenuFrame()
         self.mode = self.menu_frame
     def on_draw(self):

@@ -1,5 +1,5 @@
 import pyglet
-import main
+import config
 
 class MenuScreen(object):
     def __init__(self, game):
@@ -26,7 +26,7 @@ class Button(pyglet.sprite.Sprite):
 class LabelButton(pyglet.text.Label):
     def __init__(self, text, font_size, x, y):
         super(LabelButton, self).__init__(text,
-                                          main.GAME_FONT,
+                                          config.GAME_FONT,
                                           font_size = font_size,
                                           x = x,
                                           y = y)
