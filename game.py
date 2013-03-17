@@ -15,7 +15,7 @@ IMAGES["toolbar"] = pyglet.image.load("resources/art/toolbar.png")
 
 SOUNDS = {}
 CAMERA_WIDTH = 25
-CAMERA_HEIGHT = 15
+CAMERA_HEIGHT = 10
 class GameScreen(object):
     def __init__(self, game, save_file = None):
         messenger.Messenger.gamescreens.append(self)
@@ -26,7 +26,7 @@ class GameScreen(object):
                                             self.map.objects["player_start"][1],
                                             self)
         self.toolbar = toolbar.Toolbar()
-        self.map.objects["npcs"].append(Corinth(100,100,self)) #testing NPC
+        self.map.objects.setdefault("npcs",[]).append(Corinth(100,100,self)) #testing NPC
         self.camera = tile.Camera(self.map, CAMERA_WIDTH, CAMERA_HEIGHT, 0, 128)
         self.lambdas = []
         self.keys = []
